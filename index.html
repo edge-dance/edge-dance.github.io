@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>EDGE: Editable Dance Generation from Music</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css">
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,500,600' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/media/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/media/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./assets/media/favicon-16x16.png">
+    <link rel="manifest" href="./assets/media/site.webmanifest">
+
+    <meta property="og:site_name" content="EDGE: Editable Dance Generation from Music" />
+    <meta property="og:type" content="video.other" />
+    <meta property="og:title" content="EDGE: Editable Dance Generation from Music" />
+    <meta property="og:description" content="EDGE: Editable Dance Generation from Music, 2022." />
+    <meta property="og:url" content="https://edge-dance.github.io/" />
+    <meta property="og:image" content="https://edge-dance.github.io/assets/media/cover.png" />
+
+    <meta property="article:publisher" content="https://edge-dance.github.io/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="EDGE: Editable Dance Generation from Music" />
+    <meta name="twitter:description" content="We leverage Jukebox embeddings and a deep diffusion framework to generate diverse dances from music." />
+    <meta name="twitter:url" content="https://edge-dance.github.io/" />
+    <meta name="twitter:image" content="https://edge-dance.github.io/assets/media/cover.png" />
+    <!-- <meta name="twitter:site" content="" /> -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer@2.0.1/dist/model-viewer.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.js?features=IntersectionObserver"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://uploads-ssl.webflow.com/51e0d73d83d06baa7a00000f/js/webflow.fd002feec.js"></script>
+    <script src="./assets/scripts/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sticksy/dist/sticksy.min.js"></script>
+</head>
+
+<body class="noscroll">
+    <div id="set-height">
+        <div class="js-sticky-widget">
+            <canvas id="v0"></canvas>
+        </div>
+    </div>
+    <div id="mouse_div">
+        <div class="mouse_scroll">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+            <div>
+                <span class="m_scroll_arrows unu"></span>
+                <span class="m_scroll_arrows doi"></span>
+                <span class="m_scroll_arrows trei"></span>
+            </div>
+        </div>
+    </div>
+    <script>
+        const html = document.getElementById("set-height");
+        const canvas = document.getElementById("v0");
+        let context = canvas.getContext("2d");
+        const frameCount = 26;
+        let frame_narrow = ""
+
+        function update_narrow() {
+            let w = window.innerWidth;
+            if (w >= 1300) {
+                frame_narrow = "";
+                canvas.width = 2000;
+                canvas.height = 1000;
+                context = canvas.getContext("2d")
+            } else if (w >= 1000) {
+                frame_narrow = "_midrange";
+                canvas.width = 2000;
+                canvas.height = 2000;
+                context = canvas.getContext("2d")
+            } else {
+                frame_narrow = "_narrow";
+                canvas.width = 1000;
+                canvas.height = 2000;
+                context = canvas.getContext("2d")
+            }
+            Sticksy.hardRefreshAll();
+        }
+
+        function drawToCanvas() {
+            const scrollTop = window.pageYOffset; //html.scrollTop;
+            const maxScrollTop = html.scrollHeight; // - window.innerHeight;
+            const scrollFraction = scrollTop / maxScrollTop;
+            const frameIndex = Math.min(
+                frameCount - 1,
+                Math.ceil(scrollFraction * frameCount)
+            );
+
+            const mousefade = 1 - Math.min((scrollFraction / 0.02), 1);
+            document.getElementById("mouse_div").style.opacity = mousefade;
+
+            requestAnimationFrame(() => updateImage(frameIndex + 1))
+        }
+
+        window.addEventListener('resize', function(event) {
+            update_narrow();
+            drawToCanvas();
+        });
+        const currentFrame = index => (
+            `./assets/media/frames${frame_narrow}/${(60 + 2 * (index - 1)).toString().padStart(4, '0')}.jpg`
+        )
+
+        const preloadImages = () => {
+            for (let i = 1; i < frameCount; i++) {
+                const img = new Image();
+                img.src = currentFrame(i);
+            }
+        };
+
+        let setHeight = document.getElementById("set-height");
+        setHeight.style.height = frameCount * 200 + "px";
+
+        const img = new Image()
+        img.src = currentFrame(1);
+        update_narrow();
+        img.onload = function() {
+            context.drawImage(img, 0, 0);
+        }
+
+        const updateImage = index => {
+            img.src = currentFrame(index);
+            context.drawImage(img, 0, 0);
+        }
+
+        window.addEventListener('scroll', () => {
+            drawToCanvas();
+        });
+
+        preloadImages()
+        var stickyElements = Sticksy.initializeAll('.js-sticky-widget')
+    </script>
+    <!-- <div style="background-color: rgb(26, 26, 26);">
+        <img src="./assets/media/cover.png" class="img-fluid" alt="Responsive image">
+    </div> -->
+
+    <div class="button-bar text-light" style="padding-bottom: 10px; background-color: rgb(35, 35, 35);">
+        <div class="container" style="max-width: 768px;">
+            <h1 class="text-center"><b>EDGE:</b> Editable Dance Generation from Music</h1>
+        </div>
+        <div class="container" style="max-width: 768px; padding-bottom: 50px;">
+            <div class="row authors">
+                <div class="col">
+                    <h5 class="text-center">Jonathan Tseng</h5>
+                    <h6 class="text-center"></h6>
+                </div>
+                <div class="col">
+                    <h5 class="text-center">Rodrigo Castellon</h5>
+                    <h6 style="margin-top: 10px;" class="text-center">Stanford University</h6>
+                </div>
+                <div class="col">
+                    <h5 class="text-center">C. Karen Liu</h5>
+                    <h6 class="text-center"></h6>
+                </div>
+            </div>
+        </div>
+        <div class="buttons" style="margin-bottom: 8px;">
+            <a class="btn text-light" role="button" href="">
+                <svg style="width:24px;height:24px;margin-left:-12px;margin-right:12px" viewBox="0 0 24 24">
+                    <path fill="white" d="M16 0H8C6.9 0 6 .9 6 2V18C6 19.1 6.9 20 8 20H20C21.1 20 22 19.1 22 18V6L16 0M20 18H8V2H15V7H20V18M4 4V22H20V24H4C2.9 24 2 23.1 2 22V4H4M10 10V12H18V10H10M10 14V16H15V14H10Z"></path>
+                </svg>Paper
+            </a>
+        </div>
+    </div>
+    <div style="background-color: rgb(0, 0, 0);">
+        <div class="container text-light" style="max-width: 768px; padding-top: 30px; padding-bottom: 30px;">
+            <div class="row">
+                <div class="col-md-12">
+                    <p>
+                        <!-- <strong> -->
+                        We introduce EDGE, a powerful method for editable dance generation that is capable of creating realistic, physically-plausible dances while remaining faithful to arbitrary input music. EDGE uses a transformer-based diffusion model paired with Jukebox,
+                        a strong music feature extractor, and confers powerful editing capabilities well-suited to dance, including joint-wise conditioning, motion in-betweening, and dance continuation. We compare EDGE to recent methods
+                        <a href="https://arxiv.org/abs/2203.13055"><i>Bailando</i></a> and <a href="https://arxiv.org/abs/2101.08779">FACT</a>, and find that human raters strongly prefer dances generated by EDGE.
+                        <!-- </strong> -->
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="container text-light" style="max-width: 768px; padding-top: 30px; padding-bottom: 30px;">
+            <div class="row captioned_videos">
+                <div class="col-md-12">
+                    <!-- Large format devices -->
+                    <img class="img-fluid" src="./assets/media/gridsample.gif" alt="Dances generated by EDGE" style="width:100%;" />
+                    <!-- Small format devices -->
+                    <h6 class="caption">Pictured: 100 noncurated dance samples from EDGE conditioned on unseen music.</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Big grid -->
+    <div style="background-color: rgb(0, 0, 0);">
+        <div class="video-row">
+            <div class="col" style="padding:0; display:grid;">
+                <video class="specialvideo video lazy img-fluid" autoplay muted loop playsinline controls>
+                    <source src="./assets/media/grid1.mp4" type="video/mp4"></source>
+                </video>
+            </div>
+            <div class="col" style="padding:0; display:grid;">
+                <video class="specialvideo video lazy img-fluid" autoplay muted loop playsinline controls>
+                    <source src="./assets/media/grid2.mp4" type="video/mp4"></source>
+                </video>
+            </div>
+        </div>
+        <div class="video-row">
+            <div class="col" style="padding:0; display:grid;">
+                <video class="specialvideo video lazy img-fluid" autoplay muted loop playsinline controls>
+                    <source src="./assets/media/grid3.mp4" type="video/mp4"></source>
+                </video>
+            </div>
+            <div class="col" style="padding:0; display:grid;">
+                <video class="specialvideo video lazy img-fluid" autoplay muted loop playsinline controls>
+                    <source src="./assets/media/grid4.mp4" type="video/mp4"></source>
+                </video>
+            </div>
+        </div>
+        <div class="video-row">
+            <div class="col" style="padding:0; display:grid;">
+                <video class="specialvideo video lazy img-fluid" autoplay muted loop playsinline controls>
+                    <source src="./assets/media/grid5.mp4" type="video/mp4"></source>
+                </video>
+            </div>
+            <div class="col" style="padding:0; display:grid;">
+                <video class="specialvideo video lazy img-fluid" autoplay muted loop playsinline controls>
+                    <source src="./assets/media/grid6.mp4" type="video/mp4"></source>
+                </video>
+            </div>
+        </div>
+    </div>
+    <div style="background-color: rgb(60, 60, 60);">
+        <div class="container text-light" style="padding-top: 30px; padding-bottom: 30px; text-align:center;">
+            <h2><strong>EDGE generates choreographies from music</strong></h2>
+            <p>EDGE uses music embeddings from the powerful Jukebox model to gain a broad understanding of music and create high-quality dances even for in-the-wild music samples.</p>
+        </div>
+    </div>
+    <div style="background-color: rgb(255, 255, 255);">
+        <div class="container" style="max-width: 768px; padding-top: 30px; padding-bottom: 30px; ">
+            <div class="row">
+                <div class="col-md-12">
+                    <img src="./assets/media/model_diagram.png" class="img-fluid" alt="Responsive image">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="background-color: rgb(230, 230, 230);">
+        <div class="container text-dark" style="max-width: 768px; padding-top: 30px; padding-bottom: 30px;">
+            <div class="row">
+                <div class="col-md-12">
+                    <h6 class="caption" style="font-size: 1.2em; text-align:center;">Pictured: Although EDGE is trained on 5-second dance clips, it can generate dances of any length by imposing temporal constraints on batches of sequences. In the pictured example, EDGE constrains the first half of each sequence to
+                        match the second half of the previous one.</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="background-color: rgb(70, 70, 70);">
+        <div class="container text-light" style="max-width: 768px; padding-top: 30px; padding-bottom: 30px;">
+            <div class="row">
+                <div class="col-md-12">
+                    <p> EDGE uses a frozen Jukebox model to encode input music into embeddings. A conditional diffusion model learns to map the music embedding into a series of 5-second dance clips. At inference time, temporal constraints are applied to batches
+                        of multiple clips to enforce temporal consistency before stitching them into an arbitrary-length full video.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="video-row width-switch">
+            <div class="col" style="padding:0; display:grid;">
+                <video id="rotatingvideo1" class="specialvideo video lazy img-fluid" autoplay muted loop playsinline controls>
+                    <source src="./assets/media/gallery1.mp4" type="video/mp4"></source>
+                </video>
+                <video id="rotatingvideo2" class="hidden specialvideo video lazy img-fluid" autoplay muted loop playsinline controls>
+                    <source src="./assets/media/gallery2.mp4" type="video/mp4"></source>
+                </video>
+                <video id="rotatingvideo3" class="hidden specialvideo video lazy img-fluid" autoplay muted loop playsinline controls>
+                    <source src="./assets/media/gallery3.mp4" type="video/mp4"></source>
+                </video>
+                <video id="rotatingvideo4" class="hidden specialvideo video lazy img-fluid" autoplay muted loop playsinline controls>
+                    <source src="./assets/media/gallery4.mp4" type="video/mp4"></source>
+                </video>
+                <div class="mycarouselcaption">
+                    <p id="rotatingcaption1">Joint-Wise Constraint: Generate lower body from upper body</p>
+                    <p id="rotatingcaption2" class="hidden">Joint-Wise Constraint: Generate upper body from lower body</p>
+                    <p id="rotatingcaption3" class="hidden">Temporal Constraint: In-Betweening</p>
+                    <p id="rotatingcaption4" class="hidden">Temporal Constraint: Continuation</p>
+                </div>
+            </div>
+            <div class="col text-light align-items-center" style="background-color: rgb(35, 35, 35);">
+                <div style="display:flex;  align-items: center; justify-content: center; height:100%;">
+                    <div class="container width-switch-text" style="font-size: 1vw;">
+                        <h1>Editable Synthesis</h1>
+                        <h5>EDGE supports arbitrary spatial and temporal constraints. This can be used to support many end-user applications, including:</h5>
+                        <p></p>
+                        <ol>
+                            <li>
+                                Arbitrarily long dances, by enforcing temporal continuity between batches of multiple sequences.
+                            </li>
+                            <li>
+                                Dances subject to joint-wise constraints, i.e. lower body generation given upper body motion, or vice versa.
+                            </li>
+                            <li>
+                                Motion In-Betweening: Dances that start and end with prespecified motions.
+                            </li>
+                            <li>
+                                Dance Continuation: Dances that start with a prespecified motion.
+                            </li>
+                            <li>
+                                And many more!
+                            </li>
+                        </ol>
+                        <button class="btn btn-outline-light" type="submit" onclick="cycleGallery();">Click to cycle gallery</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="background-color: rgb(230, 230, 230);">
+        <div class="container my-text-dark" style="padding-top: 30px; padding-bottom: 30px; text-align:center;">
+            <div clas="row">
+                <div class="col">
+                    <h1>Physical Plausibility</h1>
+                    <p>EDGE avoids unintentional foot sliding and is trained with physical realism in mind.</p>
+                    <video class="specialvideo video lazy img-fluid" autoplay muted loop playsinline style="width:65%">
+                        <source src="./assets/media/physical.mp4" type="video/mp4"></source>
+                    </video>
+                    <p>Dance is full of complex, intentional, sliding foot-ground contact. EDGE learns when feet should and shouldn't slide using our new Contact Consistency Loss, which significantly improves physical realism while keeping sliding intact.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div style="background-color: rgb(255, 255, 255);">
+        <div class="container my-text-dark" style="padding: 30px 0px; text-align:center;">
+            <img src="./assets/media/human_study.png" class="img-fluid" alt="Responsive image">
+            <p>Human Raters strongly prefer dances generated by EDGE over those of previous work.</p>
+        </div>
+    </div>
+    <div style="background-color: rgb(70, 70, 70);">
+        <div class="container text-light" style="max-width: 768px; padding: 30px 0px;">
+            <div class="row">
+                <div class="col-md-12">
+                    <p>This website draws heavy design inspiration from the excellent <a href="https://imagen.research.google/">Imagen</a> site.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
