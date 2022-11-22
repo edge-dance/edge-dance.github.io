@@ -280,7 +280,7 @@ h5 {
 
 .mouse_scroll {
     position: absolute;
-    left: calc(50% + 12px);
+    left: calc(50% - 12px);
     top: 70vh;
     width: 24px;
     height: 100px;
